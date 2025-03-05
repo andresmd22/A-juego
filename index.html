@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tres en Raya</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6D7E8C, #B1C0B2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        h1 {
+            color: white;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            position: relative;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            background-color: white;
+            border: 3px solid black;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .cell:hover {
+            background-color: lightgray;
+            transform: scale(1.1);
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #FF7043;
+        }
+
+        .line {
+            position: absolute;
+            background-color: red;
+            border-radius: 5px;
+        }
+
+        .horizontal {
+            height: 10px;
+            width: 320px;
+        }
+
+        .vertical {
+            width: 10px;
+            height: 320px;
+        }
+
+        .diagonal {
+            width: 400px;
+            height: 10px;
+            transform-origin: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tres en Raya</h1>
+    <div class="board" id="board"></div>
+    <p id="status">Turno de X</p>
+    <button onclick="resetGame()">Reiniciar</button>
+
+    <script>
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameActive = true;
+
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Filas
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columnas
+            [0, 4, 8], [2, 4, 6] // Diagonales
+        ];
+
+        function checkWinner() {
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    gameActive = false;
+                    document.getElementById("status").textContent = `Ganó ${board[a]}!`;
+                    drawLine(pattern);
+                    return;
+                }
+            }
+
+            if (!board.includes("")) {
+                gameActive = false;
+                document.getElementById("status").textContent = "Empate!";
+            }
+        }
+
+        function handleClick(index) {
+            if (board[index] || !gameActive) return;
+
+            board[index] = currentPlayer;
+            document.getElementById(`cell-${index}`).textContent = currentPlayer;
+            checkWinner();
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            if (gameActive) document.getElementById("status").textContent = `Turno de ${currentPlayer}`;
+        }
+
+        function drawLine(pattern) {
+            const boardElement = document.getElementById("board");
+            const line = document.createElement("div");
+            line.classList.add("line");
+
+            const [a, b, c] = pattern;
+
+            if (pattern.includes(0) && pattern.includes(1) && pattern.includes(2)) {
+                line.classList.add("horizontal");
+                line.style.top = "50px";
+                line.style.left = "0";
+            } else if (pattern.includes(3) && pattern.includes(4) && pattern.includes(5)) {
+                line.classList.add("horizontal");
+                line.style.top = "160px";
+                line.style.left = "0";
+            } else if (pattern.includes(6) && pattern.includes(7) && pattern.includes(8)) {
+                line.classList.add("horizontal");
+                line.style.top = "270px";
+                line.style.left = "0";
+            } else if (pattern.includes(0) && pattern.includes(3) && pattern.includes(6)) {
+                line.classList.add("vertical");
+                line.style.left = "50px";
+                line.style.top = "0";
+            } else if (pattern.includes(1) && pattern.includes(4) && pattern.includes(7)) {
+                line.classList.add("vertical");
+                line.style.left = "160px";
+                line.style.top = "0";
+            } else if (pattern.includes(2) && pattern.includes(5) && pattern.includes(8)) {
+                line.classList.add("vertical");
+                line.style.left = "270px";
+                line.style.top = "0";
+            } else if (pattern.includes(0) && pattern.includes(4) && pattern.includes(8)) {
+                line.classList.add("diagonal");
+                line.style.top = "140px";
+                line.style.left = "-30px";
+                line.style.transform = "rotate(45deg)";
+            } else if (pattern.includes(2) && pattern.includes(4) && pattern.includes(6)) {
+                line.classList.add("diagonal");
+                line.style.top = "140px";
+                line.style.left = "-30px";
+                line.style.transform = "rotate(-45deg)";
+            }
+
+            boardElement.appendChild(line);
+        }
+
+        function resetGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            currentPlayer = "X";
+            gameActive = true;
+            document.getElementById("status").textContent = "Turno de X";
+            document.querySelectorAll(".cell").forEach(cell => cell.textContent = "");
+            document.querySelectorAll(".line").forEach(line => line.remove());
+        }
+
+        function createBoard() {
+            const boardElement = document.getElementById("board");
+            boardElement.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.id = `cell-${i}`;
+                cell.addEventListener("click", () => handleClick(i));
+                boardElement.appendChild(cell);
+            }
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
+
